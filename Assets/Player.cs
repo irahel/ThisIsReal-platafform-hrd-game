@@ -5,7 +5,8 @@ using UnityEngine;
 public class Player : MonoBehaviour 
 {
 
-	[SerializeField] private Animator anim_control;
+	[SerializeField] private Animator animControl;
+	[SerializeField] private Animator colliderControl;
 
 	//move
 	[SerializeField] private float speed;
@@ -16,11 +17,13 @@ public class Player : MonoBehaviour
 	private int jumpCounter;
 	private bool canJump;
 
+	private bool stateSquat;
+
 	void Start () 
-	{
-		anim_control = GetComponentInChildren<Animator> ();
+	{		
 		jumpCounter = 0;
 		canJump = true;
+		stateSquat = false;
 	}
 	
 
@@ -28,23 +31,31 @@ public class Player : MonoBehaviour
 	{
 		move ();
 		jump ();
+		down ();
 	}
 
 	void move()
-	{		
+	{	
+		float usageSpeed = speed;
+		if (stateSquat) 
+		{
+			usageSpeed = speed / 4;
+		}
+
+
 		float snapSpeed = Input.GetAxisRaw ("Horizontal");
 		if (snapSpeed > 0)
 		{
-			transform.Translate(Vector2.right * speed * Time.deltaTime);		
+			transform.Translate(Vector2.right * usageSpeed * Time.deltaTime);		
 			transform.eulerAngles = new Vector2(0, 0);
 		}
 		else if (snapSpeed < 0)
 		{
-			transform.Translate(Vector2.right * speed * Time.deltaTime);		
+			transform.Translate(Vector2.right * usageSpeed * Time.deltaTime);		
 			transform.eulerAngles = new Vector2(0, 180);
 		}
 
-		anim_control.SetFloat("Speed", Mathf.Abs(snapSpeed));
+		animControl.SetFloat("Speed", Mathf.Abs(snapSpeed));
 	}
 
 	void jump()
@@ -56,7 +67,7 @@ public class Player : MonoBehaviour
 		if (canJump) 
 		{
 			jumpCounter = 0;
-			anim_control.SetTrigger("endJump");
+			animControl.SetTrigger("endJump");
 		}
 
 
@@ -65,10 +76,17 @@ public class Player : MonoBehaviour
 			GetComponent<Rigidbody2D>().Sleep();
 			GetComponent<Rigidbody2D>().WakeUp();
 			GetComponent<Rigidbody2D>().AddForce(transform.up * jumpForce);
-			anim_control.SetTrigger("Jump");
+			animControl.SetTrigger("Jump");
 			jumpCounter++;
 		}
 
 
+	}
+
+	void down()
+	{
+		stateSquat = Input.GetAxisRaw ("Squat") > 0;
+		animControl.SetBool ("Down", stateSquat);
+		colliderControl.SetBool ("Down", stateSquat);
 	}
 }
