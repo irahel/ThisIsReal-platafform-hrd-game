@@ -19,11 +19,18 @@ public class Player : MonoBehaviour
 
 	private bool stateSquat;
 
+	[SerializeField] private float maxLife;
+	private float Life;
+
+	[SerializeField] private PlayerStatusUI status;
+
 	void Start () 
 	{		
 		jumpCounter = 0;
 		canJump = true;
 		stateSquat = false;
+		Life = maxLife;
+		status.setInitial (Life);
 	}
 	
 
@@ -88,5 +95,46 @@ public class Player : MonoBehaviour
 		stateSquat = Input.GetAxisRaw ("Squat") > 0;
 		animControl.SetBool ("Down", stateSquat);
 		colliderControl.SetBool ("Down", stateSquat);
+	}
+
+	void takeDamage(float damage)
+	{
+		
+		if (Life - damage > 0) 
+		{
+			Life -= damage;
+		}
+		else 
+		{
+			Life = 0;
+			//call death
+		}
+		status.ApllyDamage (damage);
+
+
+	}
+
+	void gainLife(float gain)
+	{
+		if (Life + gain > maxLife) 
+		{
+			Life = maxLife;
+		
+		}
+		else 
+		{
+			Life += gain;
+		}
+		status.ApllyDamage (-gain);
+	}
+
+	//TEMPORARY TEST
+	public void buttonDamageMinus()
+	{
+		takeDamage (10);
+	}
+	public void buttonDamagePlus()
+	{
+		gainLife (10);
 	}
 }
